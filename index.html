@@ -110,7 +110,7 @@
   .privacy { margin:10px 4px 0; color:#5f6590; font-size:11px; line-height:1.5; }
 
   /* ---------- hero ---------- */
-  .hero { margin:auto; text-align:center; padding:10px 6px 30px; animation:rise .7s ease both; }
+  .hero { margin:auto; width:100%; max-width:640px; min-width:0; text-align:center; padding:10px 6px 30px; animation:rise .7s ease both; }
   .logo-wrap { position:relative; width:128px; height:128px; margin:0 auto 18px; display:grid; place-items:center; }
   .logo-wrap .ring { position:absolute; inset:0; border-radius:50%; border:1.5px dashed rgba(0,229,255,.45); animation:spin 22s linear infinite; }
   .logo-wrap .ring.r2 { inset:-14px; border-color:rgba(138,92,255,.4); animation-duration:34s; animation-direction:reverse; }
@@ -120,9 +120,9 @@
   .hero h2 { margin:0; font-family:'Orbitron',sans-serif; font-weight:800; font-size:clamp(28px,7vw,42px); letter-spacing:3px;
              background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .hero p { margin:10px auto 22px; max-width:420px; color:var(--muted); line-height:1.55; font-size:14.5px; }
-  .chips { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr)); gap:10px; max-width:600px; margin:0 auto; }
+  .chips { width:100%; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr)); gap:10px; max-width:600px; margin:0 auto; }
   .chip {
-    text-align:left; padding:13px 15px; color:var(--text); background:var(--glass); border:1px solid var(--border);
+    min-width:0; text-align:left; padding:13px 15px; color:var(--text); background:var(--glass); border:1px solid var(--border);
     border-radius:14px; font:400 13.5px/1.4 'Inter',sans-serif; cursor:pointer; transition:.25s;
     backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
   }

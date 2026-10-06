@@ -17,10 +17,11 @@
     --grad:linear-gradient(135deg,var(--cyan),var(--violet) 60%,var(--pink));
   }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body { height:100%; }
+  html,body { height:100%; width:100%; overflow-x:hidden; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   body {
     margin:0; background:var(--bg); color:var(--text);
     font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif; overflow:hidden;
+    position:fixed; inset:0; overscroll-behavior:none;
   }
 
   /* ---------- animated background ---------- */
@@ -41,9 +42,9 @@
   @keyframes float { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(40px,-30px) scale(1.12);} }
 
   /* ---------- layout ---------- */
-  .app { position:relative; z-index:1; height:100dvh; max-width:880px; margin:0 auto; display:flex; flex-direction:column; }
+  .app { position:relative; z-index:1; width:100%; height:100vh; height:var(--app-h,100dvh); max-width:880px; margin:0 auto; display:flex; flex-direction:column; }
   header {
-    display:flex; align-items:center; gap:12px; margin:12px 12px 0; padding:10px 14px;
+    display:flex; align-items:center; gap:10px; margin:12px 12px 0; padding:10px 14px;
     background:var(--glass); border:1px solid var(--border); border-radius:18px;
     backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
   }
@@ -51,12 +52,12 @@
   .brand { flex:1; min-width:0; }
   .brand h1 { margin:0; font-family:'Orbitron',sans-serif; font-weight:800; font-size:17px; letter-spacing:1.5px;
               background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
-  .brand small { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .dot { width:7px; height:7px; border-radius:50%; background:#2dff9a; box-shadow:0 0 8px #2dff9a; flex:none; animation:pulse 2s infinite; }
+  .brand small { display:block; color:var(--muted); font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .dot { display:inline-block; vertical-align:middle; margin-right:6px; width:7px; height:7px; border-radius:50%; background:#2dff9a; box-shadow:0 0 8px #2dff9a; animation:pulse 2s infinite; }
   @keyframes pulse { 50%{opacity:.4;} }
   .icon-btn {
     display:flex; align-items:center; gap:6px; background:var(--glass); color:var(--text); border:1px solid var(--border);
-    padding:8px 12px; border-radius:12px; font:500 13px 'Inter',sans-serif; cursor:pointer; transition:.2s;
+    padding:8px 12px; border-radius:12px; font:500 13px 'Inter',sans-serif; cursor:pointer; transition:.2s; flex:none;
   }
   .icon-btn:hover { border-color:var(--cyan); box-shadow:0 0 14px rgba(0,229,255,.3); }
   .icon-btn svg { width:15px; height:15px; }
@@ -64,6 +65,49 @@
   #chat { flex:1; overflow-y:auto; padding:18px 14px 8px; display:flex; flex-direction:column; gap:16px; scroll-behavior:smooth; }
   #chat::-webkit-scrollbar { width:6px; }
   #chat::-webkit-scrollbar-thumb { background:rgba(255,255,255,.14); border-radius:6px; }
+
+  /* ---------- recent chats drawer ---------- */
+  .overlay { position:fixed; inset:0; z-index:20; background:rgba(2,3,10,.6); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+             opacity:0; pointer-events:none; transition:opacity .25s; }
+  .overlay.open { opacity:1; pointer-events:auto; }
+  .drawer {
+    position:fixed; z-index:21; top:0; bottom:0; left:0; width:min(320px,86vw); display:flex; flex-direction:column;
+    padding:16px 14px calc(14px + env(safe-area-inset-bottom)); background:rgba(10,12,28,.94);
+    border-right:1px solid var(--border); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    transform:translateX(-102%); transition:transform .3s cubic-bezier(.2,.8,.2,1);
+  }
+  .drawer.open { transform:none; box-shadow:12px 0 50px rgba(0,0,0,.5); }
+  .drawer-head { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .drawer-head h3 { flex:1; margin:0; font-family:'Orbitron',sans-serif; font-size:14px; letter-spacing:1.5px;
+                    background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .close-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:6px; border-radius:10px; display:grid; place-items:center; }
+  .close-btn:hover { color:var(--text); background:var(--glass); }
+  .close-btn svg { width:18px; height:18px; }
+  .new-btn {
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:11px; margin-bottom:14px;
+    border:none; border-radius:14px; cursor:pointer; color:#fff; font:600 14px 'Inter',sans-serif;
+    background:var(--grad); box-shadow:0 4px 18px rgba(138,92,255,.4); transition:.2s;
+  }
+  .new-btn:hover { transform:translateY(-2px); }
+  .new-btn svg { width:16px; height:16px; }
+  .list-label { color:var(--muted); font-size:11.5px; letter-spacing:1px; text-transform:uppercase; margin:0 4px 8px; }
+  #history { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:6px; margin:0 -4px; padding:0 4px; }
+  #history::-webkit-scrollbar { width:5px; }
+  #history::-webkit-scrollbar-thumb { background:rgba(255,255,255,.14); border-radius:6px; }
+  .h-item { display:flex; align-items:center; gap:4px; border:1px solid transparent; border-radius:12px; transition:.2s; }
+  .h-item:hover { background:var(--glass); border-color:var(--border); }
+  .h-item.active { background:rgba(0,229,255,.08); border-color:rgba(0,229,255,.35); }
+  .h-open { flex:1; min-width:0; text-align:left; background:none; border:none; color:var(--text); cursor:pointer; padding:10px 6px 10px 12px; font:inherit; }
+  .h-title { display:block; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .h-date { display:block; margin-top:2px; font-size:11px; color:var(--muted); }
+  .h-del { flex:none; background:none; border:none; color:var(--muted); cursor:pointer; padding:8px; margin-right:4px; border-radius:9px; display:grid; place-items:center; }
+  .h-del:hover { color:#ff6b8a; background:rgba(255,77,110,.1); }
+  .h-del svg { width:15px; height:15px; }
+  .h-empty { color:var(--muted); font-size:13px; line-height:1.55; padding:10px 6px; }
+  .drawer-foot { margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
+  .clear-all { width:100%; background:none; border:1px solid var(--border); color:var(--muted); padding:9px; border-radius:12px; cursor:pointer; font:500 12.5px 'Inter',sans-serif; transition:.2s; }
+  .clear-all:hover { color:#ff6b8a; border-color:rgba(255,107,138,.5); }
+  .privacy { margin:10px 4px 0; color:#5f6590; font-size:11px; line-height:1.5; }
 
   /* ---------- hero ---------- */
   .hero { margin:auto; text-align:center; padding:10px 6px 30px; animation:rise .7s ease both; }
@@ -76,7 +120,7 @@
   .hero h2 { margin:0; font-family:'Orbitron',sans-serif; font-weight:800; font-size:clamp(28px,7vw,42px); letter-spacing:3px;
              background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .hero p { margin:10px auto 22px; max-width:420px; color:var(--muted); line-height:1.55; font-size:14.5px; }
-  .chips { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; max-width:600px; margin:0 auto; }
+  .chips { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr)); gap:10px; max-width:600px; margin:0 auto; }
   .chip {
     text-align:left; padding:13px 15px; color:var(--text); background:var(--glass); border:1px solid var(--border);
     border-radius:14px; font:400 13.5px/1.4 'Inter',sans-serif; cursor:pointer; transition:.25s;
@@ -117,7 +161,7 @@
     backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); transition:.25s;
   }
   form:focus-within { border-color:var(--cyan); box-shadow:0 0 0 3px rgba(0,229,255,.12), 0 0 28px rgba(0,229,255,.2); }
-  textarea { flex:1; resize:none; background:none; border:none; outline:none; color:var(--text); font:400 15px/1.5 'Inter',sans-serif; max-height:140px; padding:8px 0; }
+  textarea { flex:1; resize:none; background:none; border:none; outline:none; color:var(--text); font:400 16px/1.5 'Inter',sans-serif; max-height:140px; min-width:0; padding:8px 0; }
   textarea::placeholder { color:#6c7298; }
   #send {
     width:42px; height:42px; flex:none; border:none; border-radius:50%; cursor:pointer; display:grid; place-items:center;
@@ -129,7 +173,22 @@
   .note { text-align:center; color:#5f6590; font-size:11.5px; margin-top:7px; }
 
   @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none !important; transition:none !important; } }
-  @media (max-width:520px) { .icon-btn span { display:none; } .col { max-width:90%; } }
+  @media (max-width:520px) {
+    .icon-btn span { display:none; }
+    .long { display:none; }
+    .col { max-width:90%; }
+    header { margin:8px 8px 0; padding:8px 10px; gap:8px; }
+    .logo-sm { width:32px; height:32px; }
+    .brand h1 { font-size:15px; letter-spacing:1px; }
+    #chat { padding:14px 10px 6px; }
+    .composer { padding:6px 8px calc(8px + env(safe-area-inset-bottom)); }
+  }
+  @media (max-height:660px) {
+    .logo-wrap { width:92px; height:92px; margin-bottom:12px; }
+    .logo-wrap svg { width:66px; height:66px; }
+    .hero { padding-bottom:12px; }
+    .hero p { margin-bottom:14px; }
+  }
 </style>
 </head>
 <body>
@@ -153,12 +212,38 @@
 
 <div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
 
+<!-- Recent chats drawer -->
+<div id="overlay" class="overlay"></div>
+<aside id="drawer" class="drawer" aria-label="Recent chats">
+  <div class="drawer-head">
+    <svg width="30" height="30" style="filter:drop-shadow(0 0 6px rgba(0,229,255,.5))"><use href="#logo"/></svg>
+    <h3>RECENT CHATS</h3>
+    <button id="closeDrawer" class="close-btn" type="button" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <button id="newChat" class="new-btn" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    New chat
+  </button>
+  <div class="list-label">Your chats</div>
+  <div id="history"></div>
+  <div class="drawer-foot">
+    <button id="clearAll" class="clear-all" type="button">Delete all chats</button>
+    <div class="privacy">Chats are saved only on this device, in this browser. Nobody else can see them.</div>
+  </div>
+</aside>
+
 <div class="app">
   <header>
+    <button id="menu" class="icon-btn" type="button" title="Recent chats" aria-label="Recent chats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+      <span>Recent</span>
+    </button>
     <svg class="logo-sm"><use href="#logo"/></svg>
     <div class="brand">
       <h1>SESOMU AI</h1>
-      <small><span class="dot"></span> Online · Made by Raghvendra Sharma for Sesomu School</small>
+      <small><span class="dot"></span>Online<span class="long"> · Made by Raghvendra Sharma for Sesomu School</span></small>
     </div>
     <button id="clear" class="icon-btn" type="button" title="Start a new chat">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -186,6 +271,9 @@ const chat = document.getElementById("chat");
 const form = document.getElementById("form");
 const input = document.getElementById("input");
 const sendBtn = document.getElementById("send");
+const drawer = document.getElementById("drawer");
+const overlay = document.getElementById("overlay");
+const historyEl = document.getElementById("history");
 
 const SUGGESTIONS = [
   "Explain photosynthesis in simple words",
@@ -195,10 +283,42 @@ const SUGGESTIONS = [
 ];
 
 const ICON_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>';
+const ICON_DEL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
 
-let messages = [];
-try { messages = JSON.parse(localStorage.getItem("sesomu_chat") || "[]"); } catch (e) {}
-function save() { try { localStorage.setItem("sesomu_chat", JSON.stringify(messages.slice(-40))); } catch (e) {} }
+/* ---------- saved chats (kept only in this browser) ---------- */
+let chats = [];      // list of saved chats, newest first
+let current = null;  // the chat being shown right now
+
+function loadChats() {
+  try { chats = JSON.parse(localStorage.getItem("sesomu_chats") || "[]"); } catch (e) { chats = []; }
+  if (!Array.isArray(chats)) chats = [];
+  // bring over the single chat saved by the older version of this page
+  try {
+    const old = JSON.parse(localStorage.getItem("sesomu_chat") || "[]");
+    if (Array.isArray(old) && old.length) {
+      const first = old.find((m) => m.role === "user");
+      chats.unshift({ id: "old" + Date.now().toString(36), title: titleFrom(first ? first.content : "Earlier chat"), updated: Date.now() - 1000, messages: old });
+    }
+    localStorage.removeItem("sesomu_chat");
+  } catch (e) {}
+  persist();
+}
+function persist() {
+  chats.sort((a, b) => b.updated - a.updated);
+  chats = chats.slice(0, 30);
+  try { localStorage.setItem("sesomu_chats", JSON.stringify(chats)); } catch (e) {}
+}
+function titleFrom(t) {
+  t = String(t || "").replace(/\s+/g, " ").trim();
+  return t.length > 42 ? t.slice(0, 42) + "…" : t || "New chat";
+}
+function newChat() {
+  current = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), title: "New chat", updated: Date.now(), messages: [] };
+}
+function removeChat(id) {
+  chats = chats.filter((c) => c.id !== id);
+  persist();
+}
 
 /* ---------- safe text formatting (bold, `code`, code blocks) ---------- */
 function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
@@ -255,7 +375,7 @@ function showHero() {
   hero.innerHTML =
     '<div class="logo-wrap"><div class="ring"></div><div class="ring r2"></div><svg><use href="#logo"/></svg></div>' +
     "<h2>SESOMU AI</h2>" +
-    "<p>Your smart school assistant. Ask a question, plan a lesson, or get help in English, Hindi or Hinglish.</p>";
+    "<p>Your smart school assistant. Ask a question, plan a lesson, or get help in English, Hindi or Hinglish.<br><small style=\"display:block;margin-top:8px;font-size:12px;color:#5f6590\">Made by Raghvendra Sharma for Sesomu School</small></p>";
   const chips = document.createElement("div"); chips.className = "chips";
   SUGGESTIONS.forEach((s) => {
     const c = document.createElement("button");
@@ -269,16 +389,71 @@ function showHero() {
 
 function render() {
   chat.innerHTML = "";
-  if (messages.length === 0) { showHero(); return; }
-  messages.forEach((m) => (m.role === "user" ? addUser(m.content) : addBot(m.content, false)));
+  if (current.messages.length === 0) { showHero(); return; }
+  current.messages.forEach((m) => (m.role === "user" ? addUser(m.content) : addBot(m.content, false)));
 }
 
+/* ---------- recent chats drawer ---------- */
+function fmtDate(ts) {
+  const d = new Date(ts), now = new Date();
+  const time = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  if (d.toDateString() === now.toDateString()) return "Today, " + time;
+  return d.toLocaleDateString([], { day: "numeric", month: "short" }) + ", " + time;
+}
+
+function renderHistory() {
+  historyEl.innerHTML = "";
+  if (chats.length === 0) {
+    const e = document.createElement("div");
+    e.className = "h-empty";
+    e.textContent = "No chats yet. Ask Sesomu AI something and your chat will appear here.";
+    historyEl.appendChild(e);
+    return;
+  }
+  chats.forEach((c) => {
+    const item = document.createElement("div");
+    item.className = "h-item" + (current && c.id === current.id ? " active" : "");
+    const open = document.createElement("button");
+    open.type = "button"; open.className = "h-open";
+    const t = document.createElement("span"); t.className = "h-title"; t.textContent = c.title;
+    const d = document.createElement("span"); d.className = "h-date"; d.textContent = fmtDate(c.updated);
+    open.appendChild(t); open.appendChild(d);
+    open.onclick = () => {
+      if (sendBtn.disabled) return;
+      current = c; render(); closeDrawer();
+    };
+    const del = document.createElement("button");
+    del.type = "button"; del.className = "h-del"; del.title = "Delete this chat"; del.innerHTML = ICON_DEL;
+    del.onclick = (ev) => {
+      ev.stopPropagation();
+      if (sendBtn.disabled) return;
+      const wasCurrent = current && c.id === current.id;
+      removeChat(c.id);
+      if (wasCurrent) { newChat(); render(); }
+      renderHistory();
+    };
+    item.appendChild(open); item.appendChild(del);
+    historyEl.appendChild(item);
+  });
+}
+
+function openDrawer() { renderHistory(); drawer.classList.add("open"); overlay.classList.add("open"); }
+function closeDrawer() { drawer.classList.remove("open"); overlay.classList.remove("open"); }
+
+function startNewChat() {
+  if (sendBtn.disabled) return;
+  newChat(); render(); closeDrawer(); input.focus();
+}
+
+/* ---------- sending a message ---------- */
 async function sendMessage(text) {
   if (sendBtn.disabled) return;
   const hero = document.getElementById("hero");
   if (hero) hero.remove();
 
-  messages.push({ role: "user", content: text });
+  const thisChat = current;
+  thisChat.messages.push({ role: "user", content: text });
+  if (thisChat.messages.length === 1) thisChat.title = titleFrom(text);
   addUser(text);
   const bot = addBot("", true);
   let reply = "";
@@ -288,7 +463,7 @@ async function sendMessage(text) {
     const res = await fetch(WORKER_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages: thisChat.messages }),
     });
     if (!res.ok) throw new Error("Server error " + res.status);
 
@@ -316,12 +491,14 @@ async function sendMessage(text) {
       }
     }
     if (!reply) throw new Error("Empty reply");
-    messages.push({ role: "assistant", content: reply });
-    save();
+    thisChat.messages.push({ role: "assistant", content: reply });
+    thisChat.updated = Date.now();
+    if (!chats.includes(thisChat)) chats.unshift(thisChat);
+    persist();
     addActions(bot.col, reply);
   } catch (err) {
     bot.bubble.textContent = "Sorry, something went wrong (" + err.message + "). Please try again.";
-    messages.pop();
+    thisChat.messages.pop();
   } finally {
     sendBtn.disabled = false;
     input.focus();
@@ -341,11 +518,33 @@ form.addEventListener("submit", (e) => {
   input.value = ""; grow();
   sendMessage(text);
 });
-document.getElementById("clear").addEventListener("click", () => {
-  if (sendBtn.disabled) return;
-  messages = []; save(); render();
+
+document.getElementById("clear").addEventListener("click", startNewChat);
+document.getElementById("newChat").addEventListener("click", startNewChat);
+document.getElementById("menu").addEventListener("click", openDrawer);
+document.getElementById("closeDrawer").addEventListener("click", closeDrawer);
+overlay.addEventListener("click", closeDrawer);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
+document.getElementById("clearAll").addEventListener("click", () => {
+  if (sendBtn.disabled || chats.length === 0) return;
+  if (!confirm("Delete all saved chats on this device?")) return;
+  chats = []; persist(); newChat(); render(); renderHistory();
 });
 
+/* ---------- fit the screen (phones: address bar and keyboard change the height) ---------- */
+function fit() {
+  const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  document.documentElement.style.setProperty("--app-h", h + "px");
+  window.scrollTo(0, 0);
+}
+fit();
+window.addEventListener("resize", fit);
+window.addEventListener("orientationchange", () => setTimeout(fit, 250));
+if (window.visualViewport) window.visualViewport.addEventListener("resize", fit);
+
+/* ---------- start: always open a fresh chat ---------- */
+loadChats();
+newChat();
 render();
 </script>
 </body>
